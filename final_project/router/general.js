@@ -90,6 +90,39 @@ public_users.get('/isbn-async/:isbn', async function (req, res) {
   }
 });
   
+// Get book details based on Author using Axios with Promise (then/catch)
+public_users.get('/author-promise/:author', function (req, res) {
+  const author = req.params.author;
+  axios.get(`http://localhost:5000/author/${encodeURIComponent(author)}`)
+    .then(response => {
+      try {
+        const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        res.send(JSON.stringify(data, null, 4));
+      } catch (e) {
+        res.send(response.data);
+      }
+    })
+    .catch(err => {
+      return res.status(500).json({ message: "Error fetching author via Axios (promise)", error: err.message });
+    });
+});
+
+// Get book details based on Author using Axios with async/await
+public_users.get('/author-async/:author', async function (req, res) {
+  const author = req.params.author;
+  try {
+    const response = await axios.get(`http://localhost:5000/author/${encodeURIComponent(author)}`);
+    try {
+      const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+      res.send(JSON.stringify(data, null, 4));
+    } catch (e) {
+      res.send(response.data);
+    }
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching author via Axios (async)", error: err.message });
+  }
+});
+  
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   const author = req.params.author;
