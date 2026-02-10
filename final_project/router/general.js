@@ -53,6 +53,42 @@ public_users.get('/isbn/:isbn',function (req, res) {
     return res.status(404).json({message: "Book not found"});
   }
  });
+
+// Get book details based on ISBN using Axios with Promise (then/catch)
+public_users.get('/isbn-promise/:isbn', function (req, res) {
+  const isbn = req.params.isbn;
+  axios.get(`http://localhost:5000/isbn/${isbn}`)
+    .then(response => {
+      // response.data may be a string if the original endpoint used JSON.stringify
+      try {
+        // If it's a string, attempt to parse; otherwise send as-is
+        const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        res.send(JSON.stringify(data, null, 4));
+      } catch (e) {
+        // fallback: send raw data
+        res.send(response.data);
+      }
+    })
+    .catch(err => {
+      return res.status(500).json({ message: "Error fetching book via Axios (promise)", error: err.message });
+    });
+});
+
+// Get book details based on ISBN using Axios with async/await
+public_users.get('/isbn-async/:isbn', async function (req, res) {
+  const isbn = req.params.isbn;
+  try {
+    const response = await axios.get(`http://localhost:5000/isbn/${isbn}`);
+    try {
+      const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+      res.send(JSON.stringify(data, null, 4));
+    } catch (e) {
+      res.send(response.data);
+    }
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching book via Axios (async)", error: err.message });
+  }
+});
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
