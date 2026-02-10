@@ -141,6 +141,39 @@ public_users.get('/author/:author',function (req, res) {
   }
 });
 
+// Get all books based on Title using Axios with Promise (then/catch)
+public_users.get('/title-promise/:title', function (req, res) {
+  const title = req.params.title;
+  axios.get(`http://localhost:5000/title/${encodeURIComponent(title)}`)
+    .then(response => {
+      try {
+        const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        res.send(JSON.stringify(data, null, 4));
+      } catch (e) {
+        res.send(response.data);
+      }
+    })
+    .catch(err => {
+      return res.status(500).json({ message: "Error fetching title via Axios (promise)", error: err.message });
+    });
+});
+
+// Get all books based on Title using Axios with async/await
+public_users.get('/title-async/:title', async function (req, res) {
+  const title = req.params.title;
+  try {
+    const response = await axios.get(`http://localhost:5000/title/${encodeURIComponent(title)}`);
+    try {
+      const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+      res.send(JSON.stringify(data, null, 4));
+    } catch (e) {
+      res.send(response.data);
+    }
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching title via Axios (async)", error: err.message });
+  }
+});
+
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   const title = req.params.title;
