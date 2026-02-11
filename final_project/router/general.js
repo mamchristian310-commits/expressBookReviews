@@ -5,7 +5,12 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
-
+/**
+ * Register a new user
+ * - Validates that username and password are provided
+ * - Checks if the username already exists
+ * - Adds the new user to the users array
+ */
 public_users.post("/register", (req,res) => {
   const username = req.body.username;
   const password = req.body.password;
@@ -23,17 +28,26 @@ public_users.post("/register", (req,res) => {
   return res.status(200).json({message: "User successfully registered"});
 });
 
-// Get the book list available in the shop
+/**
+ * Get the full list of books
+ * - Returns all books in the database
+ */
 public_users.get('/',function (req, res) {
   res.send(JSON.stringify(books,null,4));
 });
 
-// Synchronous source endpoint for books used by Axios demo
+/**
+ * Synchronous endpoint for books
+ * - Used by Axios demo routes
+ */
 public_users.get('/books-data', function (req, res) {
   res.send(books);
 });
 
-// Async endpoint demonstration using Axios (async/await)
+/**
+ * Asynchronous endpoint using Axios (async/await)
+ * - Demonstrates fetching books from another endpoint
+ */
 public_users.get('/books-async', async function (req, res) {
   try {
     const response = await axios.get('http://localhost:5000/books-data');
@@ -43,7 +57,11 @@ public_users.get('/books-async', async function (req, res) {
   }
 });
 
-// Get book details based on ISBN
+/**
+ * Get book details by ISBN
+ * - Extracts ISBN from request params
+ * - Returns book details if found, otherwise 404
+ */
 public_users.get('/isbn/:isbn',function (req, res) {
   const isbn = req.params.isbn;
   if(books[isbn]){
@@ -52,20 +70,19 @@ public_users.get('/isbn/:isbn',function (req, res) {
   else{
     return res.status(404).json({message: "Book not found"});
   }
- });
+});
 
-// Get book details based on ISBN using Axios with Promise (then/catch)
+/**
+ * Get book details by ISBN using Axios with Promise (then/catch)
+ */
 public_users.get('/isbn-promise/:isbn', function (req, res) {
   const isbn = req.params.isbn;
   axios.get(`http://localhost:5000/isbn/${isbn}`)
     .then(response => {
-      // response.data may be a string if the original endpoint used JSON.stringify
       try {
-        // If it's a string, attempt to parse; otherwise send as-is
         const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
         res.send(JSON.stringify(data, null, 4));
       } catch (e) {
-        // fallback: send raw data
         res.send(response.data);
       }
     })
@@ -74,7 +91,9 @@ public_users.get('/isbn-promise/:isbn', function (req, res) {
     });
 });
 
-// Get book details based on ISBN using Axios with async/await
+/**
+ * Get book details by ISBN using Axios with async/await
+ */
 public_users.get('/isbn-async/:isbn', async function (req, res) {
   const isbn = req.params.isbn;
   try {
@@ -89,41 +108,11 @@ public_users.get('/isbn-async/:isbn', async function (req, res) {
     return res.status(500).json({ message: "Error fetching book via Axios (async)", error: err.message });
   }
 });
-  
-// Get book details based on Author using Axios with Promise (then/catch)
-public_users.get('/author-promise/:author', function (req, res) {
-  const author = req.params.author;
-  axios.get(`http://localhost:5000/author/${encodeURIComponent(author)}`)
-    .then(response => {
-      try {
-        const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-        res.send(JSON.stringify(data, null, 4));
-      } catch (e) {
-        res.send(response.data);
-      }
-    })
-    .catch(err => {
-      return res.status(500).json({ message: "Error fetching author via Axios (promise)", error: err.message });
-    });
-});
 
-// Get book details based on Author using Axios with async/await
-public_users.get('/author-async/:author', async function (req, res) {
-  const author = req.params.author;
-  try {
-    const response = await axios.get(`http://localhost:5000/author/${encodeURIComponent(author)}`);
-    try {
-      const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-      res.send(JSON.stringify(data, null, 4));
-    } catch (e) {
-      res.send(response.data);
-    }
-  } catch (err) {
-    return res.status(500).json({ message: "Error fetching author via Axios (async)", error: err.message });
-  }
-});
-  
-// Get book details based on author
+/**
+ * Get book details by Author (synchronous)
+ * - Loops through all books and matches author name
+ */
 public_users.get('/author/:author',function (req, res) {
   const author = req.params.author;
   let authorBooks = {};
@@ -141,40 +130,10 @@ public_users.get('/author/:author',function (req, res) {
   }
 });
 
-// Get all books based on Title using Axios with Promise (then/catch)
-public_users.get('/title-promise/:title', function (req, res) {
-  const title = req.params.title;
-  axios.get(`http://localhost:5000/title/${encodeURIComponent(title)}`)
-    .then(response => {
-      try {
-        const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-        res.send(JSON.stringify(data, null, 4));
-      } catch (e) {
-        res.send(response.data);
-      }
-    })
-    .catch(err => {
-      return res.status(500).json({ message: "Error fetching title via Axios (promise)", error: err.message });
-    });
-});
-
-// Get all books based on Title using Axios with async/await
-public_users.get('/title-async/:title', async function (req, res) {
-  const title = req.params.title;
-  try {
-    const response = await axios.get(`http://localhost:5000/title/${encodeURIComponent(title)}`);
-    try {
-      const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-      res.send(JSON.stringify(data, null, 4));
-    } catch (e) {
-      res.send(response.data);
-    }
-  } catch (err) {
-    return res.status(500).json({ message: "Error fetching title via Axios (async)", error: err.message });
-  }
-});
-
-// Get all books based on title
+/**
+ * Get book details by Title (synchronous)
+ * - Loops through all books and matches title
+ */
 public_users.get('/title/:title',function (req, res) {
   const title = req.params.title;
   let titleBooks = {};
@@ -192,7 +151,10 @@ public_users.get('/title/:title',function (req, res) {
   }
 });
 
-//  Get book review
+/**
+ * Get book reviews by ISBN
+ * - Returns reviews object if book exists
+ */
 public_users.get('/review/:isbn',function (req, res) {
   const isbn = req.params.isbn;
   if(books[isbn]){
